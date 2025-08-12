@@ -30,13 +30,11 @@ func ParallelQuickSort[T any](data []T, cmp func(a, b T) bool) {
 			}
 		}
 		data[i], data[hi] = data[hi], data[i]
-
 		leftSize := i - 1 - lo + 1
 		rightSize := hi - (i + 1) + 1
-
 		// Функция запуск подзадач с контролем горутин
 		run := func(f func()) {
-			if leftSize > minSizeForParallel || rightSize > minSizeForParallel {
+			if (leftSize > minSizeForParallel) || (rightSize > minSizeForParallel) {
 				sem <- struct{}{} // захват ресурса
 				wg.Add(1)
 				// тут происходит распаралеливание
