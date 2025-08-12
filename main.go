@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-const maxGoroutines = 8
-const minSizeForParallel = 700 // меньше 700 случается deadlock ?не знаю почему?
+const maxGoroutines = 10
+const minSizeForParallel = 1000
 
 // ParallelQuickSort сортирует срез data параллельно с использованием компаратора cmp и дженерик T
 func ParallelQuickSort[T any](data []T, cmp func(a, b T) bool) {
@@ -34,11 +34,12 @@ func ParallelQuickSort[T any](data []T, cmp func(a, b T) bool) {
 		leftSize := i - 1 - lo + 1
 		rightSize := hi - (i + 1) + 1
 
-		// Функция для запуска подзадач с контролем горутин
+		// Функция запуск подзадач с контролем горутин
 		run := func(f func()) {
 			if leftSize > minSizeForParallel || rightSize > minSizeForParallel {
 				sem <- struct{}{} // захват ресурса
 				wg.Add(1)
+				// тут происходит распаралеливание
 				go func() {
 					defer wg.Done()
 					f()
@@ -67,8 +68,8 @@ func generateRandomSlice(n int, max int) []int {
 }
 
 func main() {
-	n := 13000       // длина среза
-	maxVal := 130000 // максимальное значение (не включая)
+	n := 300      // длина среза
+	maxVal := 400 // максимальное значение (не включая)
 
 	data := generateRandomSlice(n, maxVal)
 	// fmt.Println("Сгенерированный срез:", data)
@@ -77,6 +78,6 @@ func main() {
 	ParallelQuickSort(data, func(a, b int) bool { return a < b })
 	elapsed := time.Since(start)
 
-	// fmt.Println("Отсортированный массив:", data)
+	fmt.Println("Отсортированный массив:", data)
 	fmt.Printf("Время сортировки: %s\n", elapsed)
 }
